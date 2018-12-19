@@ -1,0 +1,563 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<SKIN h_margin="5">
+
+<!-- this block of vars is autoreplaced from .cxx script -->
+<VARIABLE id="FLOOR_DB" value="-60" /><VARIABLE id="MAN_THR_STEPS" value="241" /><VARIABLE id="DB_POS_COUNT" value="61" /><VARIABLE id="GRID_YPOS_COUNT" value="7" /><!-- range vars end -->
+
+<!-- this variable is autoreplaced on every run from .cxx script -->
+<!-- <VARIABLE id="WORKDIR" value="C:/VST/PLUG-N-SCRIPT/Comp Measurement Tool/" /> -->
+
+
+<!--
+<VARIABLE id="MAN_THR_STEPS" value="241" /> 
+<VARIABLE id="DB_POS_COUNT" value="61" /> 
+<VARIABLE id="GRID_YPOS_COUNT" value="7" /> 
+
+  FLOOR_DB used for THRESHOLD LEVEL FORMULA CURVE
+  MAN_THR_STEPS used for MANUAL THRESHOLD FADER
+  DB_POS_COUNT used for IP_RATIO_MEASURE_POINT
+  GRID_YPOS_COUNT used for GRID: set 7 (for 60db) or 11 (for 100 db)
+-->
+
+<!--
+<TEXT value="$_DIR_$" />
+<TEXT value="$_FILE_$" />
+<PARAM_TEXT param_id="dsp.connected_inputs_count" />
+-->
+
+
+<!--
+  <DEFINE>
+    <MAN_AUTO_SWITCH base_type="IMAGE_PARAM_BUTTON" opacity="0.7" image="$WORKDIR$\graphics\auto_manual.png" image_mouse_mask="" cursor="system::hand" />
+  </DEFINE>
+-->
+
+  <!-- Definitions -->
+  <VARIABLE id="CEIL_DB" value="0" />
+  <VARIABLE id="DEBUG_ENABLED" value="false"/>
+
+  <VARIABLE id="COLOR_COMP_LVL" value="#55c4ff"/>
+  <VARIABLE id="COLOR_COMP_LVL_REAL" value="#A2DEFF"/>
+  <VARIABLE id="COLOR_ORIG_LVL" value="#AAAAAA"/>
+  <VARIABLE id="COLOR_FILL_COMP_LVL" value="#327ca3"/>
+  <VARIABLE id="COLOR_THRESHOLD_AUTO" value="#00DD00"/>
+  <VARIABLE id="COLOR_THRESHOLD_MANUAL" value="#FF0000"/>
+  <VARIABLE id="COLOR_RATIO_MEAS_LEVEL" value="#FFE773"/>
+  
+  <VARIABLE id="INFO_TEXT_COLOR" value="#42aff6"/>
+  <VARIABLE id="PARAM_TEXT_COLOR" value="#BBBBBB"/>
+  <VARIABLE id="MAIN_RESULTS_TEXT_COLOR" value="#FFFFFF"/>
+  <VARIABLE id="ERROR_TEXT_COLOR" value="#FF3333"/>
+
+  <VARIABLE id="IP_MUTE_OUTPUT" value="custom_param0" />
+  <VARIABLE id="IP_PAUSE" value="custom_param1" />
+  <VARIABLE id="IP_THRESHOLD" value="custom_param2" />
+  <VARIABLE id="IP_AUTO_THRESHOLD" value="custom_param3" />
+  <VARIABLE id="IP_AUTO_GAIN_OFFSET" value="custom_param4" />
+  <VARIABLE id="IP_CURVE_TYPE" value="custom_param5" />
+  <VARIABLE id="IP_GAIN_OFFSET_MANUAL" value="custom_param6" />
+  <VARIABLE id="IP_RATIO_MEASURE_POINT" value="custom_param7" />
+  <VARIABLE id="IP_AUTO_RATIO" value="custom_param8" />
+  <VARIABLE id="IP_SHOW_EXTRA_INFO" value="custom_param9" />
+  <VARIABLE id="IP_INPUT_CHANNEL_COMPRESSED" value="custom_param10" />
+  <VARIABLE id="IP_INPUT_CHANNEL_TESTTONE" value="custom_param11" />
+  <VARIABLE id="IP_SAVE_SNAPSHOT" value="custom_param12" />
+  <VARIABLE id="IP_SAVE_SNAPSHOT_MODE" value="custom_param13" />
+  <VARIABLE id="IP_RANGE" value="custom_param14" />
+  <VARIABLE id="IP_SAVE_DEBUG" value="custom_param15" />
+
+  <VARIABLE id="OP_COMP_LEVEL_DB" value="custom_out_param0" />
+  <VARIABLE id="OP_ORIG_LEVEL_DB" value="custom_out_param1" />
+  <VARIABLE id="OP_FREQ" value="custom_out_param2" />
+  <VARIABLE id="OP_STEP_DURATION" value="custom_out_param3" />
+  <VARIABLE id="OP_ERR_MSG" value="custom_out_param4" />
+  <VARIABLE id="OP_CALCULATED_GAIN_OFFSET" value="custom_out_param5" />
+  <VARIABLE id="OP_THRESHOLD" value="custom_out_param6" />
+  <VARIABLE id="OP_RATIO_CURRENT" value="custom_out_param7" />
+  <VARIABLE id="OP_RATIO_CALC_MIN" value="custom_out_param8" />
+  <VARIABLE id="OP_RATIO_CALC_MAX" value="custom_out_param9" />
+  <VARIABLE id="OP_RATIO" value="custom_out_param10" />
+  <VARIABLE id="OP_CURRENT_STEP" value="custom_out_param11" />
+  <VARIABLE id="OP_COMP_LEVEL_REAL" value="custom_out_param12" />
+  <VARIABLE id="OP_ORIG_LEVEL_REAL" value="custom_out_param13" />
+  <VARIABLE id="OP_SNAPSHOT_STATE" value="custom_out_param14" />
+  <VARIABLE id="OP_KNEE" value="custom_out_param15" />
+
+  <VARIABLE id="TEXT_OPACITY" value="100%" />
+  <VARIABLE id="CURVE_DURATION" value="15000" />
+
+  <!-- a new timer -->
+  <TIMER id="timer" enabled="false" refresh_time_ms="250"/>
+
+  <!-- exposed & persistent objects -->
+  <EXPOSED_OBJECTS object_ids="threshold_level_curve;$IP_AUTO_RATIO$;comp_curve_real;comp_curve_real.paused;info_a_cell;$IP_AUTO_GAIN_OFFSET$;$IP_CURVE_TYPE$;$IP_AUTO_THRESHOLD$;$IP_THRESHOLD$;$IP_PAUSE$;comp_curve.paused;orig_curve.paused;ORIG_LEVEL_DB;$OP_COMP_LEVEL_DB$.value;$OP_ORIG_LEVEL_DB$.value;ORIG_LEVEL_DB.value;timer;timer.enabled;$OP_CURRENT_STEP$;$IP_SHOW_EXTRA_INFO$;comp_curve_real_for_graph.min" />
+
+<!--
+  <PARAM_LINK id="link1" from="$OP_COMP_LEVEL_DB$.value" to="COMP_LEVEL_DB.value" enabled="true" />
+  <PARAM_LINK id="link2" from="$OP_ORIG_LEVEL_DB$.value" to="ORIG_LEVEL_DB.value" enabled="true" />
+-->
+
+  <PERSISTENT_OBJECTS object_ids="" />
+
+  <!-- scripts -->
+  <SCRIPT requires="threshold_level_curve_auto.opacity;threshold_level_curve_manual.opacity;rmp_row.display;ratio_meas_level_curve.opacity;fader_threshold.opacity;fader_ratiopoint.opacity;auto_gain_offset.display;auto_gain_offset_hint.display;man_gain_offset.display;info_b_cell.display;info_a_cell.display;info_c_cell.display;dsp.connected_inputs_count;input_channels.display;$IP_RANGE$;refresh_needed;$reload_script$;reload_link.display" script="
+  void on_timer(){
+    timer.enabled = 0;
+    /* refresh_needed = 1; */
+  }
+
+  void stepPauseOrigCurve(){
+    if ($IP_CURVE_TYPE$ > 0.5) {
+      orig_curve.paused = true; 
+    }
+  }
+  void stepPauseCompCurve(){
+    if ($IP_CURVE_TYPE$ > 0.5) {
+      comp_curve.paused = true; 
+    }
+  }
+  void stepPauseCompRealCurve(){
+    if ($IP_CURVE_TYPE$ > 0.5) {
+      comp_curve_real.paused = true; 
+    }
+  }
+  
+  void stepUnPauseGraphs(){
+    if ($IP_PAUSE$ &lt; 0.5) {
+      if (orig_curve.paused == 1) {
+        orig_curve.paused = false;
+      }
+      if (comp_curve.paused == 1) {
+        comp_curve.paused = false;
+      }
+      if (comp_curve_real.paused == 1) {
+        comp_curve_real.paused = false;
+      }
+    }
+  }
+
+  void manualPause(){
+    if ($IP_PAUSE$ > 0.7) {
+      comp_curve.paused = true;
+      orig_curve.paused = true;
+      comp_curve_real.paused = true;
+    } else { 
+      comp_curve.paused = false;
+      orig_curve.paused = false;
+      comp_curve_real.paused = false;
+    } 
+  }
+
+  void update_gain_offset_mode() {
+    if ($IP_AUTO_GAIN_OFFSET$ &lt; 0.5) {
+      man_gain_offset.display = false;
+      auto_gain_offset_hint.display = false;
+      auto_gain_offset.display = true;
+    } else {
+      man_gain_offset.display = true;
+      auto_gain_offset_hint.display = true;
+      auto_gain_offset.display = false;
+    }
+  }
+
+  void update_threshold_fader() {
+    if ($IP_AUTO_THRESHOLD$ &lt; 0.5) {
+      fader_threshold.opacity = 1;
+      threshold_level_curve_auto.opacity = 0;
+      threshold_level_curve_manual.opacity = 0.9;
+    } else {
+      fader_threshold.opacity = 0.2;
+      threshold_level_curve_auto.opacity = 0.7;
+      threshold_level_curve_manual.opacity = 0;
+    }
+  }
+
+  void update_ratio_fader() {
+    if ($IP_AUTO_RATIO$ &lt; 0.5) {
+      fader_ratiopoint.opacity = 1;
+      ratio_meas_level_curve.opacity = 0.5;
+      rmp_row.display = true;
+    } else {
+      fader_ratiopoint.opacity = 0.2;
+      ratio_meas_level_curve.opacity = 0;
+      rmp_row.display = false;
+    }
+  }
+
+  void showHideInfo(){
+    if ($IP_SHOW_EXTRA_INFO$ > 0.5) {
+      info_a_cell.display = true;
+      info_b_cell.display = true;
+      info_c_cell.display = true;
+    } else { 
+      info_a_cell.display = false;
+      info_b_cell.display = false;
+      info_c_cell.display = false;
+    } 
+  }
+
+  void dspCountCheck(){
+    if (dsp.connected_inputs_count &lt; 4) {
+      input_channels.display = false;
+    } else {
+      input_channels.display = true;
+    }
+  }
+
+  int startup_range = 0;
+  int new_range = 0;
+  void update_range(){
+    /* timer.enabled = true; */
+    if ($IP_RANGE$ > 0.5) {
+      new_range = 100;
+    } else {
+      new_range = 60;
+    }
+    if (new_range == startup_range) {
+      reload_link.display=false;
+    } else {
+      reload_link.display=true;
+    }
+  }
+
+  void getStartupRange(){
+    if ($IP_RANGE$ > 0.5) {
+      startup_range = 100;
+    } else {
+      startup_range = 60;
+    }
+  }
+
+  " />
+
+  <!-- window onload -->
+<ACTION_TRIGGER event_id="window.loaded.value_changed" script="update_gain_offset_mode(); update_threshold_fader(); update_ratio_fader(); showHideInfo(); manualPause(); getStartupRange();" async="false" />
+
+  <ROW>
+    <!-- left "threshold" fader -->
+    <CUS_FADER_SLIM param_id="$IP_THRESHOLD$" id = "fader_threshold" height="342" v_position="27" opacity="0.3" positions_count="$MAN_THR_STEPS$" fine_ratio="25">
+      <TOOLTIP text="Manual threshold">
+      </TOOLTIP>
+    </CUS_FADER_SLIM>
+    
+    <!-- main "LCD" area -->
+    <PNS_LCD_GROUP_BOX layout_type="column" spacing="10" h_margin="12" text_color="#42aff6" font_size="12">
+        <LAYER_STACK width="450" height="25">
+          <CELL>
+            <MAN_AUTO_SWITCH param_id="$IP_AUTO_THRESHOLD$" h_position="1" v_position="9">
+              <TOOLTIP text="Switch auto/manual threshold" />
+            </MAN_AUTO_SWITCH>
+            <MAN_AUTO_SWITCH param_id="$IP_AUTO_RATIO$" h_position="404" v_position="9">
+              <TOOLTIP text="Switch auto/manual ratio" />
+            </MAN_AUTO_SWITCH>
+          </CELL>
+          
+          <!-- top lcd text -->
+          <ROW spacing="0" v_offset="6" font_size="17" text_color="$INFO_TEXT_COLOR$">  
+            <!-- <CUS_LCD_SWITCH2 param_id="$IP_AUTO_THRESHOLD$" /> -->
+            <TEXT value="   Threshold: " font_size="16" />
+            <PARAM_TEXT param_id="$OP_THRESHOLD$" width="80" text_color="$MAIN_RESULTS_TEXT_COLOR$" />
+            <TEXT value="     Ratio: " font_size="16" />
+            <PARAM_TEXT param_id="$OP_RATIO$" width="80" text_color="$MAIN_RESULTS_TEXT_COLOR$" />
+          </ROW>
+        </LAYER_STACK>
+        <!-- // top lcd text -->
+
+        <!-- graph -->
+        <LAYER_STACK width="450" height="300">
+
+          <!-- the grid -->
+          <GRID width="100%" height="100%" x_subdiv_count="0" y_subdiv_count="0" origin_color="#1b4358" subdiv_color="#072941" color="#0a3758" x_param_info_id="comp_curve.x_info"  y_param_info_id="comp_curve.y_info" x_positions_count="16" y_positions_count="$GRID_YPOS_COUNT$" />
+
+          <!-- comp curve data -->
+          <CURVE_FROM_PARAM_OVER_TIME id="comp_curve" param_id="$OP_COMP_LEVEL_DB$" duration_ms="$CURVE_DURATION$" refresh_time_ms="50" exposed="true" />
+          <CURVE_GRAPH width="100%" height="100%" curve_id="comp_curve" color="$COLOR_FILL_COMP_LVL$" graph_style="filled" opacity="50%" />
+          <CURVE_GRAPH width="100%" height="100%" curve_id="comp_curve" color="$COLOR_COMP_LVL$" line_width="1" opacity="95%" />
+
+          <!-- original comp level curve -->
+          <PARAM id="comp_curve_real_for_graph" default="$FLOOR_DB$" max="$CEIL_DB$" min="$FLOOR_DB$" unit="dB" />
+          <PARAM_LINK from="$OP_COMP_LEVEL_REAL$" to="comp_curve_real_for_graph" enabled="true" />
+          <CURVE_FROM_PARAM_OVER_TIME id="comp_curve_real" param_id="comp_curve_real_for_graph" duration_ms="$CURVE_DURATION$" refresh_time_ms="50" exposed="true" />
+          <CURVE_GRAPH width="100%" height="100%" curve_id="comp_curve_real" color="$COLOR_COMP_LVL_REAL$" line_width="1" graph_style="filled" opacity="10%" />
+
+          <!-- orig curve data -->
+          <CURVE_FROM_PARAM_OVER_TIME id="orig_curve" param_id="$OP_ORIG_LEVEL_DB$" duration_ms="$CURVE_DURATION$" refresh_time_ms="50" exposed="true" />
+          <CURVE_GRAPH width="100%" height="100%" curve_id="orig_curve" color="$COLOR_ORIG_LVL$" line_width="1" opacity="95%" />
+
+          <!-- threshold level line AUTO -->
+          <FORMULA_CURVE id="threshold_level" x_default="0" x_max="20" x_min="0" y_default="$CEIL_DB$" y_max="$CEIL_DB$" y_min="$FLOOR_DB$" formula="$OP_THRESHOLD$" />
+          <CURVE_GRAPH width="100%" height="100%" id="threshold_level_curve_auto" curve_id="threshold_level" color="$COLOR_THRESHOLD_AUTO$" line_width="1" opacity="0.7" />
+          <!-- threshold level line MANUAL -->
+          <FORMULA_CURVE id="threshold_level_man" x_default="0" x_max="20" x_min="0" y_default="$CEIL_DB$" y_max="$CEIL_DB$" y_min="$FLOOR_DB$" formula="$IP_THRESHOLD$" />
+          <CURVE_GRAPH width="100%" height="100%" id="threshold_level_curve_manual" curve_id="threshold_level_man" color="$COLOR_THRESHOLD_MANUAL$" line_width="1" opacity="0.7" />
+
+          <!-- ratio meas level line -->
+          <FORMULA_CURVE id="ratio_meas_level" x_default="0" x_max="20" x_min="0" y_default="$CEIL_DB$" y_max="$CEIL_DB$" y_min="$FLOOR_DB$" formula="$IP_RATIO_MEASURE_POINT$" />
+          <CURVE_GRAPH width="100%" height="100%" id="ratio_meas_level_curve" curve_id="ratio_meas_level" color="$COLOR_RATIO_MEAS_LEVEL$" line_width="1" opacity="1" />
+
+          <!-- info  -->
+          <CELL id="info_a_cell" display="true" h_position="0" v_position="3">
+            <COLUMN h_position="15" v_position="5" font_size="11" text_color="$INFO_TEXT_COLOR$">
+
+              <ROW h_position="0">
+                <TEXT value="Gain offset " />
+                
+                <LCD_BUTTON param_id="$IP_AUTO_GAIN_OFFSET$" v_offset="1" positions_count="2" />
+
+                <PARAM_TEXT_CONTROL text_color="$PARAM_TEXT_COLOR$" param_id="$IP_AUTO_GAIN_OFFSET$" text_h_align="left" pixel_range="1" cursor="system::size_v" width="46"  reverse="true" />
+                <PARAM_TEXT id="auto_gain_offset" param_id="$OP_CALCULATED_GAIN_OFFSET$" h_position="116" width="60">
+                </PARAM_TEXT>
+
+                <PARAM_TEXT_CONTROL id="man_gain_offset" text_color="$PARAM_TEXT_COLOR$" param_id="$IP_GAIN_OFFSET_MANUAL$" pixel_range="300" h_position="116" width="60" cursor="system::size_v" />
+
+                <PARAM_TEXT id="auto_gain_offset_hint" param_id="$OP_CALCULATED_GAIN_OFFSET$" content="({value})" h_position="160" width="60" font_size="10" value_format="0.2">
+                  <TOOLTIP text="Auto calculated gain offset" />
+                </PARAM_TEXT>
+              </ROW>
+
+              <ROW h_position="0">
+                <TEXT value="Ratios: " />
+                <PARAM_TEXT param_id="$OP_RATIO_CALC_MIN$" width="40">
+                  <TOOLTIP text="Min ratio" />
+                </PARAM_TEXT>
+                <TEXT value=".." />
+                <PARAM_TEXT param_id="$OP_RATIO_CALC_MAX$" width="40">
+                  <TOOLTIP text="Max ratio" />
+                </PARAM_TEXT>
+                <TEXT value="| " />
+                <PARAM_TEXT param_id="$OP_RATIO_CURRENT$" width="50">
+                  <TOOLTIP text="Last value" />
+                </PARAM_TEXT>
+              </ROW>
+
+              <ROW h_position="0">
+                <TEXT value="Knee (approx): " />
+                <PARAM_TEXT param_id="$OP_KNEE$" width="60" h_position="65" />
+              </ROW>
+
+              <ROW h_position="0" display="$DEBUG_ENABLED$">
+                <TEXT value="Save debug: " />
+                <CUS_LCD_SWITCH param_id="$IP_SAVE_DEBUG$" v_offset="1" />
+                <PARAM_TEXT text_color="$PARAM_TEXT_COLOR$" param_id="$IP_SAVE_DEBUG$"  width="60" text_h_align="left" />
+              </ROW>
+
+            </COLUMN>
+          </CELL>
+
+          <CELL id="info_b_cell" display="true" h_position="0" v_position="3">
+            <COLUMN h_position="260" v_position="5" font_size="11" text_color="$INFO_TEXT_COLOR$">
+
+              <ROW h_position="0">
+                <TEXT value="Test tone level: "  />
+                <PARAM_TEXT param_id="$OP_ORIG_LEVEL_REAL$" h_position="90" width="70"/>
+              </ROW>
+
+              <ROW h_position="0">
+                <TEXT value="Compressed level: "  />
+                <PARAM_TEXT param_id="$OP_COMP_LEVEL_REAL$" h_position="90" width="70"/>
+              </ROW>
+
+              <ROW h_position="0">
+                <TEXT value="Frequency: " />
+                <PARAM_TEXT param_id="$OP_FREQ$" h_position="60" width="60"/>
+              </ROW>
+
+            </COLUMN>
+
+          </CELL>
+
+          <ROW id="info_c_cell" h_position="10" v_position="235" font_size="11" text_color="$INFO_TEXT_COLOR$">
+
+            <COLUMN id="input_channels">
+              <ROW h_position="0">
+                <TEXT value="Input (compressed): " />
+                <LCD_BUTTON param_id="$IP_INPUT_CHANNEL_COMPRESSED$" v_offset="1" positions_count="3" />
+                <PARAM_TEXT_CONTROL text_color="$PARAM_TEXT_COLOR$" param_id="$IP_INPUT_CHANNEL_COMPRESSED$"  pixel_range="5" cursor="system::size_v" width="100" text_h_align="left"  reverse="true" />
+              </ROW>
+              
+              <ROW h_position="0">
+
+                <TEXT value="Range: " >
+                  <TOOLTIP text="After changing range, reload plugin" />
+                </TEXT>
+                <LCD_BUTTON param_id="$IP_RANGE$" positions_count="2" />
+                <PARAM_TEXT_CONTROL text_color="$PARAM_TEXT_COLOR$" param_id="$IP_RANGE$"  pixel_range="1" cursor="system::size_v" text_h_align="left" width="40"  reverse="true">
+                  <TOOLTIP text="After changing range, reload plugin" />
+                </PARAM_TEXT_CONTROL>
+
+                <TEXT value="[ reload plugin ]" text_color="$PARAM_TEXT_COLOR$" display="false" id="reload_link">
+                  <INVISIBLE_PARAM_TOGGLE_SWITCH param_id="dsp.input1" width="100%" height="100%"  />
+                </TEXT>
+                
+              </ROW>
+
+              <ROW h_position="0">
+                <PARAM_TEXT param_id="$OP_SNAPSHOT_STATE$" width="85" text_h_align="left" h_offset="2">
+                  <!-- <INVISIBLE_PARAM_TOGGLE_SWITCH param_id="$IP_SAVE_SNAPSHOT$" width="100%" height="100%" cursor="system::hand">
+                  </INVISIBLE_PARAM_TOGGLE_SWITCH> -->
+                </PARAM_TEXT>
+                <LCD_BUTTON param_id="$IP_SAVE_SNAPSHOT_MODE$" positions_count="3" />
+
+                <PARAM_TEXT_CONTROL  param_id="$IP_SAVE_SNAPSHOT_MODE$" width="130" text_h_align="left" pixel_range="5" cursor="system::size_v" text_color="$PARAM_TEXT_COLOR$" reverse="true"  positions_count="3" />
+              </ROW>
+
+            </COLUMN>
+
+            <COLUMN h_position="250" v_position="0">
+              <ROW h_position="0">
+                <TEXT value="Input (test tone): " />
+                <LCD_BUTTON param_id="$IP_INPUT_CHANNEL_TESTTONE$" positions_count="3" />
+                <PARAM_TEXT_CONTROL text_color="$PARAM_TEXT_COLOR$" param_id="$IP_INPUT_CHANNEL_TESTTONE$" pixel_range="5" cursor="system::size_v" text_h_align="left" width="100"  reverse="true" >
+                </PARAM_TEXT_CONTROL>
+              </ROW>
+
+              <ROW h_position="0">
+                
+                
+                <TEXT value="LCD curve: " />
+                <LCD_BUTTON param_id="$IP_CURVE_TYPE$" positions_count="2" />
+                <PARAM_TEXT_CONTROL text_color="$PARAM_TEXT_COLOR$" param_id="$IP_CURVE_TYPE$"  pixel_range="1" cursor="system::size_v" text_h_align="left" width="70"  reverse="true" />
+                
+              </ROW>
+
+              <ROW h_position="0">
+                
+
+                <TEXT value = "Reference:" />
+
+                <TEXT value="save" text_color="$PARAM_TEXT_COLOR$">
+                  <PARAM type="int" id="max3" min="0" max="3" default="0" />
+                  <PARAM_LINK from="max3" to="$IP_SAVE_SNAPSHOT$" />
+                  <INVISIBLE_PARAM_TOGGLE_SWITCH param_id="max3" width="100%" height="100%" cursor="system::hand">
+                    <TOOLTIP text="Save gain compensated curve as reference" />
+                  </INVISIBLE_PARAM_TOGGLE_SWITCH>
+                </TEXT>
+                
+                <TEXT value = "|" />
+
+                <TEXT value="save true" text_color="$PARAM_TEXT_COLOR$">
+                  <PARAM type="real" id="max2" min="0" max="2" default="0" />
+                  <PARAM_LINK from="max2" to="$IP_SAVE_SNAPSHOT$" />
+                  <INVISIBLE_PARAM_TOGGLE_SWITCH param_id="max2" width="100%" height="100%"  cursor="system::hand">
+                    <TOOLTIP text="Save true level curve as reference" />
+                  </INVISIBLE_PARAM_TOGGLE_SWITCH>
+                </TEXT>
+
+                <TEXT value = "|" />
+
+                <TEXT value="del" cursor="system::size_v" text_color="$PARAM_TEXT_COLOR$">
+                  <PARAM type="int" id="max4" min="0" max="4" default="0" />
+                  <PARAM_LINK from="max4" to="$IP_SAVE_SNAPSHOT$" />
+                  <INVISIBLE_PARAM_TOGGLE_SWITCH param_id="max4" width="100%" height="100%" cursor="system::hand">
+                    <TOOLTIP text="Remove reference" />
+                  </INVISIBLE_PARAM_TOGGLE_SWITCH>
+                </TEXT>
+              </ROW>
+
+            </COLUMN>
+
+          </ROW>
+
+        </LAYER_STACK>
+
+        <!-- bottom lcd text -->
+        <LAYER_STACK width="450" height="24">
+
+          <ROW h_position="1" v_position="0">
+            <MUTE_SWITCH param_id="$IP_MUTE_OUTPUT$" h_position="0" v_offset="-3" v_position="0">
+              <TOOLTIP text="Mute output" />
+            </MUTE_SWITCH>
+
+            <SAVE_SNAPSHOT param_id="$OP_SNAPSHOT_STATE$" h_position="27" v_offset="-3" v_position="0" >
+              <PARAM type="int" id="max1" min="0" max="1" default="0" />
+              <PARAM_LINK from="max1" to="$IP_SAVE_SNAPSHOT$" />
+              <INVISIBLE_PARAM_TOGGLE_SWITCH param_id="max1" width="100%" height="100%" cursor="system::hand">
+                <TOOLTIP text="Save snapshot"/>
+              </INVISIBLE_PARAM_TOGGLE_SWITCH>
+            </SAVE_SNAPSHOT>
+
+            <MORE_INFO_SWITCH param_id="$IP_SHOW_EXTRA_INFO$" h_position="397" v_offset="-3" v_position="0">
+              <TOOLTIP text="Settings &amp; details" />
+            </MORE_INFO_SWITCH>
+
+            <PAUSE_SWITCH param_id="$IP_PAUSE$" h_position="425" v_offset="-4" v_position="0">
+              <TOOLTIP text="Pause/resume" />
+            </PAUSE_SWITCH>
+          </ROW>
+
+          <ROW id="info_error_cell" spacing="0" v_offset="-5" width="100%">   
+            <PARAM_TEXT param_id="$OP_ERR_MSG$" font_size="14" text_h_align="center" text_color="$ERROR_TEXT_COLOR$" width="350" />
+          </ROW>
+
+        </LAYER_STACK>
+
+        <!-- // bottom lcd text -->
+
+    </PNS_LCD_GROUP_BOX>
+    <!-- // main "LCD" area -->
+
+    <!-- right "ratio point" fader -->
+      <COLUMN width="20">
+        <CUS_FADER_SLIM param_id="$IP_RATIO_MEASURE_POINT$" id = "fader_ratiopoint" height="342" v_position="27" opacity="1" h_offset="4" positions_count="$DB_POS_COUNT$">
+          <TOOLTIP text="Ratio measurement point" />
+        </CUS_FADER_SLIM>
+
+        <CELL id="rmp_row" display="false" width="30" v_offset="-351">
+            <PARAM_TEXT_CONTROL text_color="$PARAM_TEXT_COLOR$" param_id="$IP_RATIO_MEASURE_POINT$" font_size="9" text_h_align="center" pixel_range="75" cursor="system::size_v" width="100%" h_position="1" content="{value}dB" value_format="0.0" opacity="1" />
+        </CELL>
+      </COLUMN>
+  </ROW>
+
+<!--
+  <ROW>
+      
+      <TEXT value="Mute output: " />
+      <PNS_HSELECT_SWITCH param_id="$IP_MUTE_OUTPUT$" />
+      
+      <TEXT value="    Auto threshold: " />
+      <PNS_HSELECT_SWITCH param_id="$IP_AUTO_THRESHOLD$" />
+
+      <TEXT value="    Auto ratio: " />
+      <PNS_HSELECT_SWITCH param_id="$IP_AUTO_RATIO$" />
+
+      <TEXT value="Show extra: " />
+      <PNS_HSELECT_SWITCH param_id="$IP_SHOW_EXTRA_INFO$" />   
+      
+  </ROW>
+-->
+
+<!-- actions -->
+
+<!--
+<ACTION_TRIGGER requires="$OP_STEP_DURATION$;comp_curve.refresh_time_ms;orig_curve.refresh_time_ms;comp_curve.duration_ms" event_id="$OP_STEP_DURATION$.value_changed" script="comp_curve.refresh_time_ms = $OP_STEP_DURATION$ +10; orig_curve.refresh_time_ms = $OP_STEP_DURATION$ + 10;" async="false"/>
+-->
+
+<!-- ACTION TRIGGERS for Smooth Curve Mode -->
+<ACTION_TRIGGER requires="" event_id="$OP_CURRENT_STEP$.value_changed" script="stepUnPauseGraphs() " async="false"/>
+<ACTION_TRIGGER requires="" event_id="orig_curve.value_changed" script="stepPauseOrigCurve()" async="false"/>
+<ACTION_TRIGGER requires="" event_id="comp_curve.value_changed" script="stepPauseCompCurve()" async="false"/>
+<ACTION_TRIGGER requires="" event_id="comp_curve_real.value_changed" script="stepPauseCompRealCurve()" async="false"/>
+
+<!-- on manual threshold/ratio change -->
+<ACTION_TRIGGER event_id="$IP_AUTO_THRESHOLD$.value_changed" script="update_threshold_fader();" async="true"/>
+
+<ACTION_TRIGGER event_id="$IP_AUTO_RATIO$.value_changed" script="update_ratio_fader();" async="true"/>
+
+<!-- on pause -->
+<ACTION_TRIGGER event_id="$IP_PAUSE$.value_changed" script="manualPause();" async="true" />
+
+<!-- on show extra info -->
+<ACTION_TRIGGER event_id="$IP_SHOW_EXTRA_INFO$.value_changed" script="showHideInfo();" async="false" />
+
+<!-- on gain offset mode change -->
+<ACTION_TRIGGER event_id="$IP_AUTO_GAIN_OFFSET$.value_changed" script="update_gain_offset_mode();" async="true"/>
+
+<!-- on range change -->
+<ACTION_TRIGGER event_id="$IP_RANGE$.value_changed" script="update_range();" async="true"/>
+
+
+<!-- on timer -->
+<ACTION_TRIGGER event_id="timer.elapsed" script="on_timer();" async="false"/>
+
+</SKIN>

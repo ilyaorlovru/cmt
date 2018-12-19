@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <title>Attack-Release snapshot viewer</title>
+    <script type="text/javascript">
+
+        snapshot_name = ""; // If you want, you can put fixed name here
+        
+        zoom_mode = "xy"; // default zoom mode - x or xy
+        max_zoom_xy = 500; // in percents
+        max_zoom_x = 3000; // in percents
+
+        //////////////////////////////////////
+
+        // if snapshot name not set, let's try to extract snapshot name from URL
+        if (snapshot_name == "") {
+            var loc = decodeURI(window.location.toString());
+            if (loc.search(/\//) != -1) { var se = loc.lastIndexOf("/"); var ss = loc.substring(0, se).lastIndexOf("/"); } else { var se = loc.lastIndexOf("\\"); var ss = loc.substring(0, se).lastIndexOf("\\"); }
+            if (se > 0) { snapshot_name = loc.substring(ss+1, se).replace("Snapshot_AR", "").replace(/_/g, " ").trim(); }
+        }
+        
+        function pause_continue(){
+            if (!window.paused) {
+                window.paused = 0;
+                document.getElementById('undertitle').className="";
+                document.getElementById('progress').style.display="inline";
+            }
+            if (window.paused > 0) {
+                window.paused = 0;
+
+                document.getElementById('undertitle').className="live";
+                document.getElementById('progress').style.display="inline";
+                updateTime();
+            } else {
+                window.paused = 1;
+                document.getElementById('progress').style.display="none";
+                document.getElementById('undertitle').className="";
+                updateTime();
+            }
+        }
+        function updateTime(){
+            var now = new Date();
+            var icon = "";
+            if (window.paused > 0) {
+                icon = "&#x1F503;"
+            } else {
+                icon = "&#x25FC;"
+            }
+            document.getElementById('time').innerHTML=icon+"&nbsp;"+now.timeNow();
+            return now;
+        }
+        function updateLayersMenu(){
+            var ien_ref = document.getElementById('en_ref');
+            var visible_count = 0;
+            // document.getElementById('en_ref').style.display="table-cell";
+            if ((icurve_ref_not_loaded < 3) || (ihr_att_ref_not_loaded < 3) || (ihr_rel_ref_not_loaded < 3)) {
+                ien_ref.style.display = "table-cell";
+                visible_count = 1;
+            } else {
+                ien_ref.style.display = "none";
+                visible_count = 0;
+            }
+
+            if (document.getElementById('en_hr_att').style.display == "table-cell") { visible_count++; }
+            if (document.getElementById('en_hr_rel').style.display == "table-cell") { visible_count++; }
+
+            if (old_visible_count != visible_count) {
+                document.getElementById('layers_switch').className = "with"+visible_count;
+            }
+            old_visible_count = visible_count;
+            updateInactiveSwitches();
+        }
+        function main_ref_loaded(){
+            icurve_ref_not_loaded = 0;
+            updateLayersMenu();
+        }
+        function main_ref_removed(){
+            icurve_ref_not_loaded = 4;
+            updateLayersMenu();
+        }
+        
+        function hr_att_loaded(){
+            ihr_att_not_loaded = 0;
+            document.getElementById('en_hr_att').style.display="table-cell";
+            toggleHRAtt(document.getElementById('radio_hr_att').checked);
+            updateLayersMenu();
+        }
+        function hr_att_removed(){
+            ihr_att_not_loaded = 4;
+            document.getElementById('en_hr_att').style.display="none";
+            document.getElementById('hr_att_ref').className="hidden";
+            ihr_att_visible = false;
+            updateLayersMenu();
+        }
+        function hr_att_ref_loaded(){
+            ihr_att_ref_not_loaded = 0;
+            updateLayersMenu();
+        }
+        function hr_att_ref_removed(){
+            ihr_att_ref_not_loaded = 4;
+            updateLayersMenu();
+        }
+        function hr_rel_loaded(){
+            ihr_rel_not_loaded = 0;
+            document.getElementById('en_hr_rel').style.display="table-cell";
+            toggleHRRel(document.getElementById('radio_hr_rel').checked);
+            updateLayersMenu();
+        }
+        function hr_rel_removed(){
+            ihr_rel_not_loaded = 4;
+            document.getElementById('en_hr_rel').style.display="none";
+            document.getElementById('hr_rel_ref').className="hidden";
+            ihr_rel_visible = false;
+            updateLayersMenu();
+        }
+        function hr_rel_ref_loaded(){
+            ihr_rel_ref_not_loaded = 0;
+            updateLayersMenu();
+        }
+        function hr_rel_ref_removed(){
+            ihr_rel_ref_not_loaded = 4;
+            updateLayersMenu();
+        }
+        function toggleReference(is_checked){
+            var imain_ref = document.getElementById("curve_ref");
+            var ihr_att_ref = document.getElementById("hr_att_ref");
+            var ihr_rel_ref = document.getElementById("hr_rel_ref");
+            if (is_checked) { 
+                //console.log("show ref");
+                imain_ref.className = "";
+                if (ihr_att_visible) { ihr_att_ref.className=""; }
+                if (ihr_rel_visible) { ihr_rel_ref.className=""; }
+                iref_visible = true;
+            } else {
+                //console.log("hide ref");
+                imain_ref.className = "hidden";
+                ihr_att_ref.className = "hidden";
+                ihr_rel_ref.className = "hidden";
+                iref_visible = false;
+            } 
+        }
+        function toggleHRAtt(is_checked){
+            var layer = document.getElementById("hr_att");
+            var layerb = document.getElementById("hr_att_ref");
+            if (is_checked) { 
+                //console.log("show hr att");
+                layer.className = "";
+                if (iref_visible) { layerb.className = ""; }
+                ihr_att_visible = true;
+            } else {
+                //console.log("hide hr att");
+                layer.className = "hidden";
+                layerb.className = "hidden";
+                ihr_att_visible = false;
+            }
+            updateInactiveSwitches();
+        }
+        function toggleHRRel(is_checked){
+            var layer = document.getElementById("hr_rel");
+            var layerb = document.getElementById("hr_rel_ref");
+            if (is_checked) { 
+                layer.className = "";
+                if (iref_visible) { layerb.className = ""; }
+                ihr_rel_visible = true;
+            } else {
+                layer.className = "hidden";
+                layerb.className = "hidden"; 
+                ihr_rel_visible = false;
+            }
+            updateInactiveSwitches();
+        }
+        function updateInactiveSwitches(){
+            var ien_extra = document.getElementById("en_extra");
+            var ien_orig = document.getElementById("en_orig");
+            var ien_attrel = document.getElementById("en_attrel");
+            var setopacity = "0.4";
+            if (ihr_att_visible || ihr_rel_visible) {
+                ien_extra.style.opacity = setopacity;
+                ien_orig.style.opacity = setopacity;
+                ien_attrel.style.opacity = setopacity;
+            } else {
+                ien_extra.style.opacity = "1";
+                ien_orig.style.opacity = "1";
+                ien_attrel.style.opacity = "1";
+            }
+        }
+
+        function updateSnapshotName(){
+            var sn = document.getElementById('snapshot_name');
+            if (sessionStorage.snapShotName) {
+                sn.value = sessionStorage.snapShotName;
+            } else if (snapshot_name != "") {
+                sn.value = snapshot_name;
+            } 
+            sn.placeholder="Snapshot name";
+        }
+
+        icurve_ref_not_loaded = 4;
+        ihr_att_not_loaded = 4;
+        ihr_att_ref_not_loaded = 4;
+        ihr_rel_not_loaded = 4;
+        ihr_rel_ref_not_loaded = 4;
+        ihr_att_visible = false;
+        ihr_rel_visible = false;
+        iref_visible = true;
+        old_visible_count = 0;
+
+
+        function zoomIn(){
+            var zs = document.getElementById("zoomSlider");
+            if (zoom_mode == "xy") {
+                zs.value = parseInt(zs.value) + 50;
+            } else {
+                zs.value = parseInt(zs.value)*1.5;
+            }
+            zoomChange();
+        }
+        function zoomOut(){
+            var zs = document.getElementById("zoomSlider");
+            if (zoom_mode == "xy") {
+                zs.value = parseInt(zs.value) - 50;
+            } else {
+                zs.value = parseInt(zs.value)/1.5;
+            }
+            zoomChange();
+        }
+
+        function zoomChange(){
+            document.getElementById("zoom_out").className = "";
+            document.getElementById("zoom_in").className = "";
+            document.getElementById("cont_scr").className = "zoom";
+
+            if (zoom_mode == "xy") {
+                max_zoom = max_zoom_xy;
+            } else {
+                max_zoom = max_zoom_x;
+            }
+    
+            var zoom = document.getElementById("zoomSlider").value;
+            if (zoom >= max_zoom) { 
+                zoom = max_zoom;              
+                document.getElementById("zoom_in").className = "disabled";
+            } else if (zoom <= 100) { 
+                zoom = 100;
+                document.getElementById("zoom_out").className = "disabled";
+            }
+
+            if (zoom_mode == "xy") {
+                document.getElementById("cont").style.width = zoom+"%";
+                zoom_xy = zoom;
+            } else {
+                setGraphZoomX(zoom);
+                zoom_x = zoom;
+            }
+
+            if ((zoom_x == 100) && (zoom_xy == 100)) {
+                document.getElementById("cont_scr").className = "";
+            }
+
+            deselectAll();
+        }
+
+        function zoomModeChange(){
+            if (zoom_mode == "xy") {
+                zoom_mode = "x";
+                document.getElementById("zoomSlider").max = max_zoom_x;
+                document.getElementById("zoomSlider").value = zoom_x;
+            } else {
+                zoom_mode = "xy";
+                document.getElementById("zoomSlider").max = max_zoom_xy;
+                document.getElementById("zoomSlider").value = zoom_xy;
+            }
+            document.getElementById("zoom_mode").value = zoom_mode;
+            zoomChange();
+        }
+
+        function setGraphZoomX(setw) {
+            document.getElementById("background").style.width = setw+"%";
+            document.getElementById("info_a").style.width = setw+"%";
+            document.getElementById("info_b").style.width = setw+"%";
+            document.getElementById("curve_ref").style.width = setw+"%";
+            document.getElementById("curve").style.width = setw+"%";
+            document.getElementById("progress").style.width = setw+"%";
+            document.getElementById("hr_att").style.width = setw+"%";
+            document.getElementById("hr_att_ref").style.width = setw+"%";
+            document.getElementById("hr_rel").style.width = setw+"%";
+            document.getElementById("hr_rel_ref").style.width = setw+"%";
+        }
+
+        zoom_visible = true;
+        zoom_x = 100;
+        zoom_xy = 100;
+
+        function toggleZoomVisible(){
+            document.getElementById("zoom_mode").value = zoom_mode;
+            document.getElementById("zoomSlider").max = max_zoom_xy;
+            if (zoom_visible) {
+                zoom_visible = false;
+                document.getElementById("zoom_container").className = "hidden";
+            } else {
+                zoom_visible = true;
+                document.getElementById("zoom_container").className = "";
+            }
+        }
+        
+        function deselectAll(){
+            if (window.getSelection) {
+              if (window.getSelection().empty) {  // Chrome
+                window.getSelection().empty();
+              } else if (window.getSelection().removeAllRanges) {  // Firefox
+                window.getSelection().removeAllRanges();
+              }
+            } else if (document.selection) {  // IE?
+              document.selection.empty();
+            }
+        }
+    </script>
+    <style>
+    html, body {height: 100%; margin-top: 0; overflow: hidden; margin: 0px; padding: 0px; background-color: #EEEEEE; }
+    #background, #info_a, #info_b, #curve_ref, #curve, #progress, #hr_att, #hr_att_ref, #hr_rel, #hr_rel_ref{
+        position: absolute;
+        left: 0px;
+        top: 0px;
+        width: 100%; /* can set to 1000% for x-zoom */
+        height: 100%;
+    }
+    #sub_background{
+        position: static;
+        opacity: 0;
+    }
+    #progress{
+        opacity: 0.5;
+        top: 0px;
+    }
+    .hidden{
+        display: none !important;
+    }
+    #layers_switch{
+        left: 50%; 
+        width: 480px;
+        margin-left: -240px;
+        position: absolute;
+        font-family: Arial;
+        font-size: 13px;
+        text-align: center;
+        background: #EEEEEE;
+        
+    }
+    #layers_switch.with1{
+        width: 600px;
+        margin-left: -300px;
+    }
+    #layers_switch.with2{
+        width: 720px;
+        margin-left: -360px;
+    }
+    #layers_switch.with3{
+        width: 800px;
+        margin-left: -400px;
+    }
+
+    #layers_switch table{
+        white-space: nowrap;
+        width: 100%;
+    }
+    #layers_switch table label{
+        cursor: pointer;
+        user-select: none;
+    }
+    .en_orig{ color: #06266F; }
+    .en_attrel{ color: #015965; }
+    .en_extra{ color: #777; }
+    .en_ref{ color: #AA0000; }   
+    .en_controls{ color: #777; }
+    #undertitle{
+        color: #777; line-height: 18px; font-size: 12px; font-family: Consolas; margin-top: 5px; padding: 0px; text-align: center; color: #777; white-space: nowrap;
+    }
+    #undertitle.live #time{
+        color: #009900;
+    }
+    #cont_scr{
+        position: relative;
+        overflow: hidden;
+        width: 100%;
+        max-height: calc(100% - 25px);
+    }
+    #cont_scr.zoom{
+        overflow: scroll;
+        max-height: calc(100% - 30px);
+    }
+    #cont{
+        position: relative; 
+    }
+    #zoom_in, #zoom_out, #zoom_toggle{
+        cursor: pointer;
+    }
+    input[type=button]{
+        margin-top: -10px;
+        height: 24px;
+        font-size: 100%;
+    }
+    #zoom_out.disabled, #zoom_in.disabled{
+        cursor: default;
+        opacity: 0.25;
+    }
+    .zoomplusminus{
+        font-size: 90%; position: absolute; margin-left: -9px; margin-top: -2.7px;
+        opacity: 0.9;
+    }
+    #zoom_container{
+        margin-top: 7px;
+        zoom: 1;
+        display: block;
+        padding-left: 30px;
+    }
+    #zoom_mode{
+        width: 30px;
+    }
+    .slidercontainer{
+        position: relative;
+        width: 100px;
+        min-width: 100px;
+        display: inline-block;
+        margin-right: 10px;
+        margin-left: 5px;
+    }
+    .slider{
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        width: 100px; 
+        height: 15px; 
+        outline: none; 
+        opacity: 1;
+        transition: opacity .1s;
+    }
+    .slider:hover{
+        opacity: 1;
+    }
+    .invisible{
+
+    }
+
+    </style>
+</head>
+<body style="" onload="updateSnapshotName(); pause_continue(); updateTime(); toggleZoomVisible();">
+
+<div id="cont_scr"><div id="cont"><img src="attack_release_data/background.svg" alt="" id="sub_background"><img src="attack_release_data/background.svg" alt="" id="background"><img src="attack_release_data/curve.svg" alt="" id="curve"><img src="attack_release_data/curve_ref.svg" alt="" id="curve_ref" onload="main_ref_loaded()" ><img src="attack_release_data/info_a.svg" alt="" id="info_a"><img src="attack_release_data/info_b.svg" alt="" id="info_b"><img src="attack_release_data/hires_attack.svg" alt="" id="hr_att" onload="hr_att_loaded()" class="hidden"><img src="attack_release_data/hires_attack_ref.svg" alt="" id="hr_att_ref" onload="hr_att_ref_loaded()" class="hidden"><img src="attack_release_data/hires_release.svg" alt="" id="hr_rel" onload="hr_rel_loaded()" class="hidden"><img src="attack_release_data/hires_release_ref.svg" alt="" id="hr_rel_ref" onload="hr_rel_ref_loaded()" class="hidden"><img src="attack_release_data/progress.svg" alt="" id="progress"></div></div>
+
+<div id="top_overlay" style="position: absolute; top: 25px; left: 50%; margin-left: -300px; width: 600px;">
+    <input type="text" placeholder="" id="snapshot_name" style="width: 100%; background: transparent; font-size: 22px; font-family: Consolas; border: none; text-align: center;" >
+    <p id="undertitle">
+        
+        <span id="time" style="cursor: pointer;" title="Live mode on/off" onclick="pause_continue();"></span>
+        <span id="zoom_toggle" onclick="toggleZoomVisible();" title="Show/hide zoom controls">&#x1F50E;</span>
+
+        <span id="zoom_container" class="hidden">
+            <input type="button" value="-" id="zoom_out" class="disabled" onclick="zoomOut();" />
+            <span class="slidercontainer">
+                <input type="range" min="100" max="400" value="100" class="slider" id="zoomSlider" onchange="zoomChange();">&nbsp;
+            </span>
+            <input type="button" value="+" id="zoom_in" onclick="zoomIn();" />
+            <input type="button" value="xy" id="zoom_mode" onclick="zoomModeChange();" title="Toggle zoom mode"/>
+        </span>
+    </p>
+</div>
+
+<div id="layers_switch" class="">
+<table><tr>
+<td class="en_orig" id="en_orig">
+    <label><input type="checkbox" checked id="radio_curve" onclick='var layer = document.getElementById("curve"); if (this.checked) { layer.className = ""; } else {  layer.className = "hidden"; } '/>Level curve</label>
+</td>
+<td class="en_attrel" id="en_attrel">
+    <label><input type="checkbox" checked id="radio_info_a" onclick='var layer = document.getElementById("info_a"); if (this.checked) { layer.className = ""; } else {  layer.className = "hidden"; } '/>Attack-Release</label>
+</td>
+<td class="en_extra" id="en_extra">
+    <label><input type="checkbox" checked id="radio_info_b" onclick='var layer = document.getElementById("info_b"); if (this.checked) { layer.className = "";  } else {  layer.className = "hidden";  } '/>Extra info</label>
+</td>
+<td class="en_hr_att" style="display: none;" id="en_hr_att">
+    <label><input type="checkbox" id="radio_hr_att" onclick="toggleHRAtt(this.checked)" />HR Attack</label>
+</td>
+<td class="en_hr_rel" style="display: none;" id="en_hr_rel">
+    <label><input type="checkbox" id="radio_hr_rel" onclick="toggleHRRel(this.checked)" />HR Release</label>
+</td>
+<td class="en_ref" style="display: none;" id="en_ref">
+    <label><input type="checkbox" checked id="radio_ref" onclick="toggleReference(this.checked)" />Reference</label>
+</td>
+<td class="en_controls">
+    <label><input type="checkbox" checked id="radio_controls" onclick='var layer = document.getElementById("undertitle"); if (this.checked) { utclass = (window.paused > 0) ? "" : "live"; layer.className = utclass; } else { layer.className = "hidden";  } '/>Controls</label>
+</td>
+</tr></table>
+</div>
+
+<script type="text/javascript">
+    // For the time outputting
+    Date.prototype.timeNow = function () {
+         return ((this.getHours() < 10)?"0":"") + this.getHours() +":"+ ((this.getMinutes() < 10)?"0":"") + this.getMinutes() +":"+ ((this.getSeconds() < 10)?"0":"") + this.getSeconds();
+    }
+
+    // regularly refresh image
+    var timerId = setInterval(function tick() {
+        if (!window.paused) {
+            var now = updateTime();
+            var isubback = document.getElementById("sub_background");
+            var ibackground = document.getElementById("background");
+            var icurve = document.getElementById("curve");
+            var iinfo_a = document.getElementById("info_a");
+            var iinfo_b = document.getElementById("info_b");
+            var icurve_ref = document.getElementById("curve_ref");
+            var ihr_att = document.getElementById("hr_att");
+            var ihr_rel = document.getElementById("hr_rel");
+            var ihr_att_ref = document.getElementById("hr_att_ref");
+            var ihr_rel_ref = document.getElementById("hr_rel_ref");
+
+            if (ibackground) {
+                isubback.src = isubback.src.split("?")[0] + "?" + now.getTime();
+                ibackground.src = ibackground.src.split("?")[0] + "?" + now.getTime();
+                icurve.src = icurve.src.split("?")[0] + "?" + now.getTime();
+                iinfo_a.src = iinfo_a.src.split("?")[0] + "?" + now.getTime();
+                iinfo_b.src = iinfo_b.src.split("?")[0] + "?" + now.getTime();
+            }
+            
+            // reference curve (trying to load)
+            icurve_ref.src = icurve_ref.src.split("?")[0] + "?" + now.getTime();
+            if (!icurve_ref.loaded) {
+                icurve_ref_not_loaded++;
+                if (icurve_ref_not_loaded == 3) { main_ref_removed(); }
+            } 
+
+            // HR attack curve (trying to load)
+            ihr_att.src = ihr_att.src.split("?")[0] + "?" + now.getTime();
+            if (!ihr_att.loaded) {
+                ihr_att_not_loaded++;
+                if (ihr_att_not_loaded == 3) { hr_att_removed(); }
+            }
+            ihr_att_ref.src = ihr_att_ref.src.split("?")[0] + "?" + now.getTime();
+            if (!ihr_att_ref.loaded) {
+                ihr_att_ref_not_loaded++;
+                if (ihr_att_ref_not_loaded == 3) { hr_att_ref_removed(); }
+            }
+
+            // HR release curve (trying to load)
+            ihr_rel.src = ihr_rel.src.split("?")[0] + "?" + now.getTime();
+            if (!ihr_rel.loaded) {
+                ihr_rel_not_loaded++;
+                if (ihr_rel_not_loaded == 3) { hr_rel_removed(); }
+            }
+            ihr_rel_ref.src = ihr_rel_ref.src.split("?")[0] + "?" + now.getTime();
+            if (!ihr_rel_ref.loaded) { 
+                ihr_rel_ref_not_loaded++; 
+                if (ihr_rel_ref_not_loaded == 3) { hr_rel_ref_removed(); }
+            }
+
+        }
+    }, 1000);
+
+    var timerId2 = setInterval(function tickProgress() {
+        if (!window.paused) {
+            var now = updateTime();
+            var iprogress = document.getElementById("progress");
+            if (iprogress) {
+                iprogress.src = iprogress.src.split("?")[0] + "?" + now.getTime();
+            }
+        }
+       }, 250);
+
+    // for hitting "enter" inside snapshot name
+    document.getElementById("snapshot_name")
+        .addEventListener("keyup", function(event) {
+        event.preventDefault();
+        if (event.keyCode === 13) {
+            var sn = document.getElementById("snapshot_name");
+            sn.blur();
+            sessionStorage.snapShotName = sn.value;
+        }
+    });
+
+    
+</script>
+
+</body>
+</html>

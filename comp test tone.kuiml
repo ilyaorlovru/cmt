@@ -1,0 +1,483 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<SKIN h_margin="5">
+  
+  <!-- input parameters -->
+  <VARIABLE id="IP_ONOFF_N" value="0" />
+    <VARIABLE id="IP_ONOFF" value="custom_param$IP_ONOFF_N$" />
+  <VARIABLE id="IP_GEN_MODE_N" value="1" />
+    <VARIABLE id="IP_GEN_MODE" value="custom_param$IP_GEN_MODE_N$" />
+  <VARIABLE id="IP_STATIC_LEVEL_N" value="2" />
+    <VARIABLE id="IP_STATIC_LEVEL" value="custom_param$IP_STATIC_LEVEL_N$" />
+
+  <VARIABLE id="IP_FREQ_MODE_N" value="3" />
+    <VARIABLE id="IP_FREQ_MODE" value="custom_param$IP_FREQ_MODE_N$" />
+  <VARIABLE id="IP_FREQ_PRESETS_N" value="4" />
+    <VARIABLE id="IP_FREQ_PRESETS" value="custom_param$IP_FREQ_PRESETS_N$" />
+  <VARIABLE id="IP_FREQ_FREE_N" value="5" />
+    <VARIABLE id="IP_FREQ_FREE" value="custom_param$IP_FREQ_FREE_N$" />
+  <VARIABLE id="IP_FREQ_SAMPLES_N" value="6" />
+    <VARIABLE id="IP_FREQ_SAMPLES" value="custom_param$IP_FREQ_SAMPLES_N$" />
+  
+  <VARIABLE id="IP_AR_HIGH_LEVEL_N" value="7" />
+    <VARIABLE id="IP_AR_HIGH_LEVEL" value="custom_param$IP_AR_HIGH_LEVEL_N$" />
+  <VARIABLE id="IP_AR_HIGH_DUR_N" value="8" />
+    <VARIABLE id="IP_AR_HIGH_DUR" value="custom_param$IP_AR_HIGH_DUR_N$" />
+  <VARIABLE id="IP_AR_HIGH_DUR_MS_N" value="9" />
+    <VARIABLE id="IP_AR_HIGH_DUR_MS" value="custom_param$IP_AR_HIGH_DUR_MS_N$" />
+  <VARIABLE id="IP_AR_LOW_LEVEL_N" value="10" />
+    <VARIABLE id="IP_AR_LOW_LEVEL" value="custom_param$IP_AR_LOW_LEVEL_N$" />
+  <VARIABLE id="IP_AR_LOW_DUR_N" value="11" />
+    <VARIABLE id="IP_AR_LOW_DUR" value="custom_param$IP_AR_LOW_DUR_N$" />
+
+  <VARIABLE id="IP_TR_BOTTOM_LEVEL_N" value="12" />
+    <VARIABLE id="IP_TR_BOTTOM_LEVEL" value="custom_param$IP_TR_BOTTOM_LEVEL_N$" />
+  <VARIABLE id="IP_TR_TOP_LEVEL_N" value="13" />
+    <VARIABLE id="IP_TR_TOP_LEVEL" value="custom_param$IP_TR_TOP_LEVEL_N$" />
+  <VARIABLE id="IP_TR_STEP_DUR_N" value="14" />
+    <VARIABLE id="IP_TR_STEP_DUR" value="custom_param$IP_TR_STEP_DUR_N$" />
+  <VARIABLE id="IP_TR_PAUSE_DUR_N" value="15" />
+    <VARIABLE id="IP_TR_PAUSE_DUR" value="custom_param$IP_TR_PAUSE_DUR_N$" />
+
+  <VARIABLE id="IP_FR_START_FREQ_N" value="16" />
+    <VARIABLE id="IP_FR_START_FREQ" value="custom_param$IP_FR_START_FREQ_N$" />
+  <VARIABLE id="IP_FR_END_FREQ_N" value="17" />
+    <VARIABLE id="IP_FR_END_FREQ" value="custom_param$IP_FR_END_FREQ_N$" />
+  <VARIABLE id="IP_FR_STEP_DUR_N" value="18" />
+    <VARIABLE id="IP_FR_STEP_DUR" value="custom_param$IP_FR_STEP_DUR_N$" />
+  <VARIABLE id="IP_FR_PAUSE_DUR_N" value="19" />
+    <VARIABLE id="IP_FR_PAUSE_DUR" value="custom_param$IP_FR_PAUSE_DUR_N$" />
+
+  <VARIABLE id="OP_MODE" value="custom_out_param0" />
+  <VARIABLE id="OP_SAMPLERATE" value="custom_out_param1" />
+  <VARIABLE id="OP_FREQ" value="custom_out_param2" />
+  <VARIABLE id="OP_LEVEL" value="custom_out_param3" />
+  <VARIABLE id="OP_PERIOD_LENGTH_SAMPLES" value="custom_out_param4" />
+
+  <!-- predefined vars -->
+  <VARIABLE id="MODE_SIMPLE" value="0" />
+  <VARIABLE id="MODE_ATT_REL" value="1" />
+  <VARIABLE id="MODE_THR_RATIO" value="2" />
+  <VARIABLE id="MODE_FREQ_RANGE" value="3" />
+
+  <!-- to change period length display format -->
+  <PARAM id="period_est_or_meas" min="0" max="1" default="0" value_format=".0" />
+  <PARAM id="static_level_knob_mode" min="0" max="1" default="1" value_format=".0" />
+
+  <EXPOSED_OBJECTS object_ids="length_est.display;length_meas.display;period_est_or_meas;$IP_GEN_MODE$;params_att_rel_a.display;params_att_rel_b.display;params_thr_rat.display;freq_set_cell.display;freq_free_cell.display;$IP_FREQ_MODE$;$IP_AR_HIGH_DUR$;knob_control$IP_AR_HIGH_LEVEL_N$.opacity;level_text.opacity;$OP_LEVEL$;level_text_muted.opacity;static_level_knob_mode;knob_control$IP_STATIC_LEVEL_N$;knob_control$IP_STATIC_LEVEL_N$.zoom;knob_control$IP_STATIC_LEVEL_N$.opacity;knob_subtext$IP_STATIC_LEVEL_N$.opacity;knob_freq_free.opacity;knob_freq_set.opacity;knob_title$IP_STATIC_LEVEL_N$.opacity;knob_freq_free_subtext.opacity;knob_freq_set_subtext.opacity;params_freq.display;knob_subtext$IP_AR_HIGH_LEVEL_N$.opacity;$IP_FREQ_PRESETS$;$IP_FREQ_PRESETS$.value;knob_freq_samples.opacity;knob_freq_samples_subtext.opacity;FREQ_PRESETS_MAX;FREQ_PRESETS_MAX.max;params_simple.display;ar_high_dur_ms_cell.display" />
+  <PERSISTENT_OBJECTS object_ids="" />
+
+  <SCRIPT requires="" script="
+  void showCorrectKnobs(){
+    if (closeTo($IP_GEN_MODE$, $MODE_SIMPLE$, 0.2)) {
+      params_att_rel_a.display = false;
+      params_att_rel_b.display = false;
+      params_thr_rat.display = false;
+      params_freq.display = false;
+      /* params_simple.display = true; */
+
+      knob_freq_free.opacity = 1;
+      knob_freq_set.opacity = 1;
+      knob_freq_set_subtext.opacity = 1;
+      knob_freq_free_subtext.opacity = 1;
+      samples_knob_visibility = 1;
+      FreqPreset_Changes(); /* show little samples knob */
+      knob_control$IP_STATIC_LEVEL_N$.opacity = 1;
+      knob_subtext$IP_STATIC_LEVEL_N$.opacity = 1;
+
+
+    } else if (closeTo($IP_GEN_MODE$, $MODE_ATT_REL$, 0.2)) {
+      params_att_rel_a.display = true;
+      params_att_rel_b.display = true;
+      params_thr_rat.display = false;
+      params_freq.display = false;
+      params_simple.display = false;
+
+      knob_freq_free.opacity = 1;
+      knob_freq_set.opacity = 1;
+      knob_freq_set_subtext.opacity = 1;
+      knob_freq_free_subtext.opacity = 1;
+      samples_knob_visibility = 1;
+      FreqPreset_Changes(); /* show little samples knob */
+      knob_control$IP_STATIC_LEVEL_N$.opacity = 0.2;
+      knob_subtext$IP_STATIC_LEVEL_N$.opacity = 0.2;
+
+
+    } else if (closeTo($IP_GEN_MODE$, $MODE_THR_RATIO$, 0.2)) { 
+      params_att_rel_a.display = false;
+      params_att_rel_b.display = false;
+      params_thr_rat.display = true;
+      params_freq.display = false;
+      params_simple.display = false;
+
+      knob_freq_free.opacity = 1;
+      knob_freq_set.opacity = 1;
+      knob_freq_set_subtext.opacity = 1;
+      knob_freq_free_subtext.opacity = 1;
+      samples_knob_visibility = 1;
+      FreqPreset_Changes(); /* show little samples knob */
+      knob_control$IP_STATIC_LEVEL_N$.opacity = 0.2;
+      knob_subtext$IP_STATIC_LEVEL_N$.opacity = 0.2;
+
+
+    } else {
+      params_att_rel_a.display = false;
+      params_att_rel_b.display = false;
+      params_thr_rat.display = false;
+      params_freq.display = true;
+      params_simple.display = false;
+
+      knob_freq_free.opacity = 0.2;
+      knob_freq_set.opacity = 0.2;
+      knob_freq_set_subtext.opacity = 0.2;
+      knob_freq_free_subtext.opacity = 0.2;
+      samples_knob_visibility = 0.2;
+      FreqPreset_Changes();
+      knob_control$IP_STATIC_LEVEL_N$.opacity = 1;
+      knob_subtext$IP_STATIC_LEVEL_N$.opacity = 1;
+
+    }
+
+    if ($IP_FREQ_MODE$ &lt; 0.5) {
+      freq_set_cell.display = true;
+      freq_free_cell.display = false;
+    } else {
+      freq_set_cell.display = false;
+      freq_free_cell.display = true;
+    }
+  }
+
+  void Period_EstOrMeas_Changed() {
+    if (period_est_or_meas == 0) {
+      length_est.display = true;
+      length_meas.display = false;
+    } else {
+      length_meas.display = true;
+      length_est.display = false;
+    }
+  }
+
+  void Static_Level_Mode_Changed() {
+    if (static_level_knob_mode == 0) {
+      knob_control$IP_STATIC_LEVEL_N$.zoom = 1;
+    } else {
+      knob_control$IP_STATIC_LEVEL_N$.zoom = 3.735;
+    }
+  }
+
+  void OP_Level_Changed() {
+    if ($OP_LEVEL$ &lt; -199 ) {
+      level_text.opacity = 0;
+      level_text_muted.opacity = 0.7;
+    } else {
+      level_text_muted.opacity = 0;
+      level_text.opacity = 0.7;
+
+    }
+  }
+
+  void AttRel_Changes(){
+    /* int a = AR_HIGH_DUR_PRESETS_MAX; */
+    int a = 1;
+
+    if ($IP_AR_HIGH_DUR$ == 0) {
+      knob_control$IP_AR_HIGH_LEVEL_N$.opacity = 0.3;
+      knob_subtext$IP_AR_HIGH_LEVEL_N$.opacity = 0.3;
+    } else {
+      knob_control$IP_AR_HIGH_LEVEL_N$.opacity = 1;
+      knob_subtext$IP_AR_HIGH_LEVEL_N$.opacity = 1;
+    }
+
+    if ($IP_AR_HIGH_DUR$ == a) {
+      ar_high_dur_ms_cell.display = true;
+    } else {
+      ar_high_dur_ms_cell.display = false;
+    }
+
+  }
+
+  double samples_knob_visibility = 1;
+  void FreqPreset_Changes(){
+    int a = FREQ_PRESETS_MAX;
+    if ($IP_FREQ_PRESETS$ == a) {
+      knob_freq_samples.opacity = samples_knob_visibility;
+      knob_freq_samples_subtext.opacity = samples_knob_visibility;
+    } else {
+      knob_freq_samples.opacity = 0;
+      knob_freq_samples_subtext.opacity = 0;
+    }
+  }
+  " />
+
+  <!-- window onload -->
+  <ACTION_TRIGGER event_id="window.loaded.value_changed" script="showCorrectKnobs();Period_EstOrMeas_Changed(); Static_Level_Mode_Changed(); OP_Level_Changed();AttRel_Changes();" async="false" />
+
+  <!-- template for knobs -->
+  <TEMPLATE id="TPL_PARAM_CONTROL_LAYOUT" title="##UNDEFINED##" param_index="##UNDEFINED##" z="##UNDEFINED##" o="##UNDEFINED##" fr="##UNDEFINED##">
+    <COLUMN v_align="top" spacing="1">
+      <TEXT value="$title$" width="100%" font_weight="bold" fit_text="abbreviate" id="knob_title$param_index$"/>
+      <ORANGE_KNOB param_id="custom_param$param_index$" zoom="$z$" offset="$o$" id="knob_control$param_index$" fine_ratio="$fr$" />
+      <PARAM_TEXT param_id="custom_param$param_index$" width="65" id="knob_subtext$param_index$" exposed="true" />
+    </COLUMN>
+    <PARAM_LINK from="$script_input_param$param_index$_steps$" to="knob_control$param_index$.positions_count"/>
+  </TEMPLATE>
+
+  <!-- template for converting .cxx "steps" to kuiml "positions_count" -->
+  <TEMPLATE id="TPL_PARAM_LINK_STEPS" param_index="##UNDEFINED##" knob_id="##UNDEFINED##">
+    <PARAM_LINK from="$script_input_param$param_index$_steps$" to="$knob_id$.positions_count"/>
+  </TEMPLATE>
+  <!-- the same for getting max value of custom param -->
+  <TEMPLATE id="TPL_PARAM_LINK_MAX" param_index="##UNDEFINED##" item_id="##UNDEFINED##">
+    <PARAM_LINK from="$script_input_param$param_index$_max$" to="$item_id$"/>
+  </TEMPLATE>
+
+  <!-- TOP ROW -->
+  <ROW h_margin="10" v_margin="5" v_offset="1" spacing="10">
+    <PNS_FILLED_GROUP_BOX opacity="100%" v_margin="10">
+      <ROW h_margin="15" spacing="10">
+
+        <!-- on/off switch -->
+        <COLUMN v_align="top" spacing="5">
+          <PARAM_TEXT param_id="$IP_ONOFF$" content="{name}" width="100%" font_weight="bold" fit_text="abbreviate"/>
+          <ORANGE_ON_OFF_SWITCH param_id="$IP_ONOFF$" />
+          <PARAM_TEXT param_id="$IP_ONOFF$" width="65">
+          </PARAM_TEXT>
+        </COLUMN>
+
+        <!-- frequency selector -->
+        <COLUMN v_align="top" spacing="1">
+          <PARAM_TEXT param_id="$IP_FREQ_MODE$" font_weight="bold" width="80" />
+
+          <!-- fixed frequencies -->
+          <CELL id="freq_set_cell" display="true">
+            <ORANGE_KNOB param_id="$IP_FREQ_PRESETS$" id="knob_freq_set" exposed="true" />
+            <PARAM_TEXT param_id="$IP_FREQ_PRESETS$" id="knob_freq_set_subtext" width="65"  content="{text_value}" exposed="true" />
+            <TPL_PARAM_LINK_STEPS param_index="$IP_FREQ_PRESETS_N$" knob_id="knob_freq_set" />
+            <PARAM id="FREQ_PRESETS_MAX" min="0" max="5000" default="4" exposed="true" />
+            <TPL_PARAM_LINK_MAX param_index="$IP_FREQ_PRESETS_N$" item_id="FREQ_PRESETS_MAX" />
+            
+
+            <CELL h_offset="-20" v_offset="-20">
+                <ROW width="50" spacing="0" margin="0">
+                
+                <ORANGE_MINI_KNOB param_id="$IP_FREQ_SAMPLES$" id="knob_freq_samples" fine_ratio="4" opacity="90%" v_offset="-1" zoom="10.01" offset="0" />
+                <PARAM_TEXT param_id="$IP_FREQ_SAMPLES$" id="knob_freq_samples_subtext" width="25" text_h_align="center" content="{value}" value_format=".0"  h_offset="0" />
+                </ROW>
+                <TPL_PARAM_LINK_STEPS param_index="$IP_FREQ_SAMPLES_N$" knob_id="knob_freq_samples" />
+            </CELL>
+          </CELL>
+
+          <!-- full-range frequency -->
+          <CELL id="freq_free_cell" display="false">
+            <ORANGE_KNOB param_id="$IP_FREQ_FREE$" id="knob_freq_free" fine_ratio="100" />
+            <PARAM_TEXT param_id="$IP_FREQ_FREE$" id="knob_freq_free_subtext" width="65" />
+            <TPL_PARAM_LINK_STEPS param_index="$IP_FREQ_FREE_N$" knob_id="knob_freq_free" />
+          </CELL>
+
+          <!-- invisible knob to switch freq modes -->
+          <INVISIBLE_BUTTON_54x30 param_id="$IP_FREQ_MODE$" opacity="0" v_position="94">
+            <TOOLTIP text="Switch free/preset mode" />
+          </INVISIBLE_BUTTON_54x30>
+
+        </COLUMN>
+
+        <!-- static level -->
+        <CELL id="static_level_cell" exposed="true">
+          <TPL_PARAM_CONTROL_LAYOUT title="Level" param_index="$IP_STATIC_LEVEL_N$" o="0.8535" />
+          <INVISIBLE_BUTTON_54x30 param_id="static_level_knob_mode" opacity="0" v_position="94">
+            <TOOLTIP text="Switch limited/full range" />
+          </INVISIBLE_BUTTON_54x30>
+        </CELL>
+
+        <!-- gen mode selector -->
+        <LAYER_STACK>
+          <COLUMN v_align="top" spacing="5">
+            <TEXT value="Mode" width="100%" font_weight="bold" fit_text="abbreviate"/>
+            <ORANGE_SWITCH_SLIDER param_id="$IP_GEN_MODE$" height="66" reverse="true" margin_before="14" margin_after="12" id="gen_mode_switch" />
+            <PARAM_TEXT param_id="$IP_GEN_MODE$" width="65" fit_text="abbreviate" content="{text_value}" />
+            <TPL_PARAM_LINK_STEPS param_index="$IP_GEN_MODE_N$" knob_id="gen_mode_switch" />
+          </COLUMN>
+
+          <!-- click-cycle through modes -->
+          <INVISIBLE_BUTTON_54x30 id="inv_button_modes_a" positions_count="2" opacity="0" h_offset="2" v_offset="49" param_id="$IP_GEN_MODE$">
+            <TOOLTIP text="Click to cycle though modes" />
+          </INVISIBLE_BUTTON_54x30>
+          <TPL_PARAM_LINK_STEPS param_index="$IP_GEN_MODE_N$" knob_id="inv_button_modes_a" />
+
+        </LAYER_STACK>
+        
+
+      </ROW>
+    </PNS_FILLED_GROUP_BOX>
+  </ROW>
+
+  <!-- LCD display -->
+  <PNS_LCD_GROUP_BOX layout_type="column" spacing="10" h_margin="12" v_margin="12" v_offset="2" text_color="#FFEB96" font_size="10">
+      <ROW>
+      <!-- samplerate -->
+      <PARAM_TEXT param_id="$OP_SAMPLERATE$" width="42" text_h_align="middle" opacity="0.6">
+        <TOOLTIP text="SampleRate"  />
+      </PARAM_TEXT>
+
+      <!-- level -->
+      <LAYER_STACK>
+        <PARAM_TEXT param_id="$OP_LEVEL$" width="55" h_offset="-4" text_h_align="right" opacity="0.8" id="level_text">
+          <TOOLTIP text="Current signal level" />
+        </PARAM_TEXT>
+        <TEXT id="level_text_muted" value="---" opacity="0" />
+      </LAYER_STACK>
+      
+      <!-- mode -->
+      <PARAM_TEXT param_id="$OP_MODE$" width="100" text_h_align="middle" opacity="1"  font_size="12" v_offset="-1">
+        <TOOLTIP text="Current mode" />
+        <INVISIBLE_BUTTON_54x30 id="inv_button_modes" positions_count="2" opacity="0" h_offset="15" v_offset="1" param_id="$IP_GEN_MODE$" width="100%" height="100%"/>
+      </PARAM_TEXT>
+      <TPL_PARAM_LINK_STEPS param_index="$IP_GEN_MODE_N$" knob_id="inv_button_modes" />
+
+      <!-- frequency -->
+      <PARAM_TEXT param_id="$OP_FREQ$" width="54" text_h_align="middle" opacity="0.8">
+        <TOOLTIP text="Current frequency" />
+      </PARAM_TEXT>
+
+      <!-- measured period length -->
+      <!-- convert samplelength to ms -->
+      <FORMULA_PARAM unit="ms" value_format=".2" id="period_ms_meas" formula="$OP_PERIOD_LENGTH_SAMPLES$*1000/$OP_SAMPLERATE$"/>
+
+      <LAYER_STACK font_size="8">
+        <CELL id="length_meas"  width="60">
+          <PARAM_TEXT param_id="$OP_PERIOD_LENGTH_SAMPLES$" width="62" text_h_align="middle" opacity="0.6">
+            <TOOLTIP text="Period length in samples (measured)" />
+          </PARAM_TEXT>
+          <PARAM_TEXT param_id="period_ms_meas" width="58" text_h_align="middle" opacity="0.6">
+            <TOOLTIP text="Period length in ms (measured)" />
+          </PARAM_TEXT>
+        </CELL>
+
+        <!-- estimated period in samples & ms -->
+        <FORMULA_PARAM unit="ms" value_format=".3" id="period_ms_est" formula="1000/$OP_FREQ$"/>
+        <FORMULA_PARAM unit="smp" value_format=".3" id="period_smpls_est" formula="$OP_SAMPLERATE$/$OP_FREQ$"/>
+
+        <CELL id="length_est" width="60">
+          <PARAM_TEXT param_id="period_smpls_est" width="58" text_h_align="middle" opacity="0.6">
+            <TOOLTIP text="Period length in samples (estimated)" />
+          </PARAM_TEXT>
+          <PARAM_TEXT param_id="period_ms_est" width="58" text_h_align="middle" opacity="0.6">
+            <TOOLTIP text="Period length in ms (estimated)" />
+          </PARAM_TEXT>
+        </CELL>
+
+        <!-- switch to change period display mode - estimated or measured -->
+        <INVISIBLE_BUTTON_54x30 positions_count="2" opacity="0" h_offset="2" v_position="0" param_id="period_est_or_meas">
+            <TOOLTIP text="Period length in samples/ms&#13;(click for estimated/measured)" />
+        </INVISIBLE_BUTTON_54x30>
+        <INVISIBLE_BUTTON_54x30 positions_count="2" opacity="0" h_offset="2" v_position="11" param_id="period_est_or_meas">
+            <TOOLTIP text="Period length in samples/ms&#13;(click for estimated/measured)" />
+        </INVISIBLE_BUTTON_54x30>
+
+      </LAYER_STACK>
+
+    </ROW>
+  </PNS_LCD_GROUP_BOX>
+
+
+
+  <!-- BOTTOM CONTROLS ROW -->
+  <ROW v_margin="10" spacing="10" v_offset="-1">
+
+    <!-- simple mode params -->
+    <CELL id="params_simple" opacity="100%" h_margin="15" v_margin="10" height="130" exposed="true" display="false">
+      <TEXT value=" " />
+    </CELL>
+
+    <!-- attack release params -->
+    <PNS_FILLED_GROUP_BOX id="params_att_rel_a" opacity="100%" h_margin="13" v_margin="10">
+      <ROW spacing="0">
+        <TPL_PARAM_CONTROL_LAYOUT title="High Level" param_index="$IP_AR_HIGH_LEVEL_N$" z="6" o="0.8" />
+        <LAYER_STACK>
+        <TPL_PARAM_CONTROL_LAYOUT title="Time" param_index="$IP_AR_HIGH_DUR_N$" fr="1" />
+        <!-- mini knob for AR high dur ms -->
+          <CELL h_offset="-15" v_offset="48" id="ar_high_dur_ms_cell" display="false">
+              <ROW width="50" spacing="0" margin="0">
+              <ORANGE_MINI_KNOB param_id="$IP_AR_HIGH_DUR_MS$" id="knob_hi_dur_ms" fine_ratio="10" opacity="90%" v_offset="-1" />
+              <PARAM_TEXT param_id="$IP_AR_HIGH_DUR_MS$" id="knob_hi_dur_ms_subtext" width="28" text_h_align="center" content="{value}" value_format=".1"  h_offset="0" />
+              <TPL_PARAM_LINK_STEPS param_index="$IP_AR_HIGH_DUR_MS_N$" knob_id="knob_hi_dur_ms" />
+              <PARAM id="AR_HIGH_DUR_PRESETS_MAX" min="0" max="5000" default="0" exposed="true" />
+              <TPL_PARAM_LINK_MAX param_index="$IP_AR_HIGH_DUR_N$" item_id="AR_HIGH_DUR_PRESETS_MAX" />
+              </ROW>
+          </CELL>
+        </LAYER_STACK>
+      </ROW>
+    </PNS_FILLED_GROUP_BOX>
+
+    <PNS_FILLED_GROUP_BOX id="params_att_rel_b"  opacity="100%" h_margin="13" v_margin="10">
+      <ROW spacing="0">
+        <TPL_PARAM_CONTROL_LAYOUT title="Low Level" param_index="$IP_AR_LOW_LEVEL_N$" z="4" o="0.78" />
+        <TPL_PARAM_CONTROL_LAYOUT title="Time" param_index="$IP_AR_LOW_DUR_N$" fr="1" />
+      </ROW>
+    </PNS_FILLED_GROUP_BOX>
+
+    <!-- threshold ratio params -->
+    <PNS_FILLED_GROUP_BOX id="params_thr_rat" opacity="100%" h_margin="15" v_margin="10">
+      <ROW spacing="5">
+        <TPL_PARAM_CONTROL_LAYOUT title="Min Level" param_index="$IP_TR_BOTTOM_LEVEL_N$" fr="1" />
+        <TPL_PARAM_CONTROL_LAYOUT title="Max Level" param_index="$IP_TR_TOP_LEVEL_N$" z="1.34" o="1" fr="1" />
+        <TPL_PARAM_CONTROL_LAYOUT title="Step Duration" param_index="$IP_TR_STEP_DUR_N$" fr="1" />
+        <TPL_PARAM_CONTROL_LAYOUT title="Pause" param_index="$IP_TR_PAUSE_DUR_N$" fr="1" />
+      </ROW>
+    </PNS_FILLED_GROUP_BOX>
+
+    <!-- freq mode params -->
+    <PNS_FILLED_GROUP_BOX id="params_freq" opacity="100%" h_margin="15" v_margin="10">
+      <ROW spacing="5">
+        <TPL_PARAM_CONTROL_LAYOUT title="Start freq" param_index="$IP_FR_START_FREQ_N$" fr="1" />
+        <TPL_PARAM_CONTROL_LAYOUT title="End freq" param_index="$IP_FR_END_FREQ_N$" fr="1" />
+        <TPL_PARAM_CONTROL_LAYOUT title="Step Duration" param_index="$IP_FR_STEP_DUR_N$" fr="1" /> <!-- 1.2 -->
+        <TPL_PARAM_CONTROL_LAYOUT title="Pause" param_index="$IP_FR_PAUSE_DUR_N$" fr="1" />
+      </ROW>
+    </PNS_FILLED_GROUP_BOX>
+  </ROW>
+
+
+  
+
+<!-- generator mode changed -->
+<ACTION_TRIGGER event_id="$IP_GEN_MODE$.value_changed" script="showCorrectKnobs();" async="false" />
+
+<!-- freq mode changed -->
+<ACTION_TRIGGER event_id="$IP_FREQ_MODE$.value_changed" script="showCorrectKnobs();" async="false" />
+
+<!-- static level mode changed -->
+<ACTION_TRIGGER event_id="static_level_knob_mode.value_changed" script="Static_Level_Mode_Changed();" async="false" />
+
+<!-- period length display mode -->
+<ACTION_TRIGGER event_id="period_est_or_meas.value_changed" script="Period_EstOrMeas_Changed();" async="false" />
+
+<!-- output level change -->
+<ACTION_TRIGGER event_id="$OP_LEVEL$.value_changed" script="OP_Level_Changed();" async="false" />
+
+<!-- AR High Level duration changed -->
+<ACTION_TRIGGER event_id="$IP_AR_HIGH_DUR$.value_changed" script="AttRel_Changes();" async="false" />
+
+<!-- freq preset changed -->
+<ACTION_TRIGGER event_id="$IP_FREQ_PRESETS$.value_changed" script="FreqPreset_Changes();" async="false" />
+
+</SKIN>
+
+<!-- 
+
+<CUS_DARK_MINI_BLUE_KNOB param_id="$IP_FREQ_PRESETS$" />
+
+array<string> inputParametersNames={"Enable", "Freq Set", "High Level",
+"Low Level", "Time", "Time", "Mode",
+"Min Level", "Max Level", "Step Duration", "Pause"}; 
+
+// AR High Level duration changed 
+<ACTION_TRIGGER event_id="$IP_AR_HIGH_DUR$.value_changed" script="AttRel_Changes();" async="false" />
+
+// Experiments with KUIML.
+
+<FORMULA_PARAM id="f_param" formula="$IP_FREQ_PRESETS$.max - $IP_FREQ_PRESETS$.min" exposed="true" />
+
+<PARAM_TEXT param_id="$script_input_param1_steps$" />
+<PARAM_TEXT param_id="f_param" content="max-min: {value}" />
+<PARAM_TEXT param_id="$IP_FREQ_PRESETS$" content="{value}" />
+-->
